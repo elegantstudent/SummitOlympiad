@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Light Mode Palette */
+    --background: oklch(0.985 0.005 85);
+    --foreground: oklch(0.129 0.042 264.695);
+    --muted: oklch(0.96 0.01 85);
+    --muted-foreground: oklch(0.55 0.02 264);
+    --border: oklch(0.92 0.01 85);
+    --card: oklch(1 0 0);
+    --primary: oklch(0.129 0.042 264.695);
+    --primary-foreground: oklch(0.985 0.005 85);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      /* Dark Mode Palette */
+      --background: oklch(0.129 0.042 264.695);
+      --foreground: oklch(0.985 0.005 85);
+      --muted: oklch(0.20 0.04 264);
+      --muted-foreground: oklch(0.70 0.02 264);
+      --border: oklch(0.25 0.04 264);
+      --card: oklch(0.15 0.04 264);
+      --primary: oklch(0.985 0.005 85);
+      --primary-foreground: oklch(0.129 0.042 264.695);
+    }
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    -webkit-font-smoothing: antialiased;
+  }
+}
