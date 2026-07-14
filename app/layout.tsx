@@ -3,6 +3,7 @@ import "./globals.css";
 import "katex/dist/katex.min.css";
 import Navbar from "../components/Navbar";
 import { Inter_Tight, Fraunces } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 
 // Load Inter Tight for body text
 const interTight = Inter_Tight({ 
@@ -37,6 +38,7 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+        <Analytics />
       </body>
     </html>
   );
