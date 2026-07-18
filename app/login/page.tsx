@@ -25,13 +25,35 @@ export default function LoginPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        router.push("/"); // Redirect home on successful login
+        router.push("/");
         router.refresh();
       }
     } catch (error: any) {
       setMessage({ text: error.message, type: "error" });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setMessage({ text: "Please enter your email address in the field above first.", type: "error" });
+      return;
+    }
+    
+    setLoading(true);
+    setMessage({ text: "", type: "" });
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/settings`,
+    });
+
+    setLoading(false);
+    if (error) {
+      setMessage({ text: `Recovery Error: ${error.message}`, type: "error" });
+    } else {
+      // 🛡️ Secure standard phrasing to prevent email enumeration
+      setMessage({ text: "If an account matches this email, a recovery link has been sent!", type: "success" });
     }
   };
 
@@ -81,6 +103,18 @@ export default function LoginPage() {
               className="w-full mt-1 border border-[oklch(0.90_0.01_85)] rounded-md px-4 py-3 text-[14px] outline-none focus:border-[oklch(0.20_0.02_260)] transition-colors"
               placeholder="••••••••"
             />
+            {/* ⚡ Replaced to sit elegantly right under the input block on the right */}
+            {!isSignUp && (
+              <div className="flex justify-end mt-1.5 px-0.5">
+                <button 
+                  type="button" 
+                  onClick={handleForgotPassword}
+                  className="text-[11px] font-medium text-slate-400 hover:text-black transition-colors underline bg-transparent border-none p-0 cursor-pointer"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+            )}
           </div>
 
           {message.text && (

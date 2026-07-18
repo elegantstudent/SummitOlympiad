@@ -63,20 +63,29 @@ export default function Navbar() {
     setSaving(true);
     setError("");
 
+    const cleanHandle = newHandle.toLowerCase().replace(/\s+/g, '');
+
     const { error: updateError } = await supabase
       .from("profiles")
       .update({ 
         display_name: newDisplayName,
-        handle: newHandle.toLowerCase().replace(/\s+/g, '')
+        handle: cleanHandle
       })
       .eq("id", session.user.id);
 
     if (updateError) {
-      setError(`Database Error: ${updateError.message}`);
+      if (updateError.code === "23505" || updateError.message.toLowerCase().includes("unique")) {
+         setError("This handle is already used by someone else.");
+      } else {
+         setError(`Error: ${updateError.message}`);
+      }
       setSaving(false);
     } else {
       await fetchProfile(session.user.id);
       setSaving(false);
+      window.dispatchEvent(new CustomEvent("profile-updated", {
+        detail: { display_name: newDisplayName, handle: cleanHandle }
+      }));
     }
   };
 
@@ -94,6 +103,7 @@ export default function Navbar() {
             <Link href="/olympiads/math" className="text-[14px] font-sans text-[oklch(0.45_0.02_260)] hover:text-[oklch(0.20_0.02_260)] transition-colors">Math</Link>
             <Link href="/olympiads/usaco" className="text-[14px] font-sans text-[oklch(0.45_0.02_260)] hover:text-[oklch(0.20_0.02_260)] transition-colors">USACO</Link>
             <Link href="/about" className="text-[14px] font-sans text-[oklch(0.45_0.02_260)] hover:text-[oklch(0.20_0.02_260)] transition-colors">About</Link>
+            <Link href="/contributors" className="text-[14px] font-sans text-slate-400 hover:text-[oklch(0.20_0.02_260)] transition-colors">Contributors</Link>
           </div>
 
           <div className="flex items-center">
@@ -141,10 +151,7 @@ export default function Navbar() {
             ) : (
 
               <div className="flex items-center gap-6">
-                <Link 
-                  href="/settings"
-                  className="flex items-center gap-3 group px-2 py-1 transition-all"
-                >
+                <div className="flex items-center gap-3 px-2 py-1">
                   <div className="relative w-8 h-8 rounded-full overflow-hidden border border-[oklch(0.90_0.01_85)] flex items-center justify-center bg-[oklch(0.94_0.02_85)] shrink-0">
                     {profile.avatar_url ? (
                       <img src={`${profile.avatar_url}?t=${Date.now()}`} alt="Avatar" className="w-full h-full object-cover" />
@@ -163,12 +170,23 @@ export default function Navbar() {
                       @{profile.handle}
                     </span>
                   </div>
-                </Link>
+                </div>
                 
-                {/* 🚀 FIXED: Shows normal casing instead of ALL CAPS */}
+                <Link 
+                  href="/settings" 
+                  className="p-1.5 text-[oklch(0.45_0.02_260)] hover:text-black hover:bg-black/5 rounded-full transition-all duration-300 group"
+                  title="Account Settings"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-500 group-hover:rotate-90">
+                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </Link>
+
+                {/* THE ROUTING FIX: Dynamic Link Generation */}
                 {(profile.role === "admin" || profile.role === "volunteer") && (
                   <Link 
-                    href="/admin" 
+                    href={profile.role === "admin" ? "/admin" : "/workspace"} 
                     className="text-[13px] font-bold text-[oklch(0.45_0.02_260)] hover:text-[oklch(0.20_0.02_260)] transition-colors"
                   >
                     {profile.role === "admin" ? "Admin" : "Workspace"}
