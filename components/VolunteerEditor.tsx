@@ -232,12 +232,13 @@ export default function VolunteerEditor() {
         </div>
 
         <div className="p-8 pb-0 shrink-0">
-          <div className="flex items-start justify-between mb-4">
+          {/* 🚀 FIXED: Added flex-col sm:flex-row and items-center flex-wrap to prevent bleeding and misalignment */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
             <div>
               <h2 className="font-serif text-[24px] font-medium text-[oklch(0.20_0.02_260)] mb-1">Dynamic Editor</h2>
               <p className="text-[13px] text-[oklch(0.45_0.02_260)]">Progress is auto-saved locally as you type.</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button type="button" onClick={() => setShowDraftsMenu(!showDraftsMenu)} className="text-[12px] font-bold tracking-wider uppercase text-blue-600 hover:bg-blue-50 transition-colors border border-blue-200 px-3 py-1.5 rounded-md bg-white shadow-sm shrink-0">
                 Cloud Drafts ({(cloudDrafts.problems.length + cloudDrafts.lessons.length) || 0}/5)
               </button>
