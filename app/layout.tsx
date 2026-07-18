@@ -18,9 +18,15 @@ const fraunces = Fraunces({
   axes: ["SOFT", "WONK", "opsz"], 
 });
 
+// 🚀 UPGRADED COMPREHENSIVE PRODUCTION SEO METADATA
 export const metadata = {
-  title: "Summit Olympiad",
-  description: "A focused prep platform for the olympiads that matter.",
+  title: "Summit Olympiad | Advanced STEM Curriculum",
+  description: "Master Physics, Mathematics, and USACO with free, elite curriculum arrays. Author core content to earn officially verified community service hours.",
+  openGraph: {
+    title: "Summit Olympiad",
+    description: "Master advanced STEM disciplines and claim verified volunteer service credentials.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

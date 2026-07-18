@@ -6,7 +6,6 @@ import { supabase } from "../../lib/supabase";
 import dynamic from "next/dynamic";
 import CertificatePDF from "../../components/CertificatePDF";
 
-// 🚀 Dynamically load the PDF Engine so it doesn't crash SSR
 const PDFDownloadLink = dynamic(
   () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
   {
@@ -40,6 +39,9 @@ export default function SettingsPage() {
   const [handle, setHandle] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [pendingAvatar, setPendingAvatar] = useState<Blob | null>(null);
+  
+  // 🚀 New Password State
+  const [newPassword, setNewPassword] = useState("");
   
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -95,10 +97,11 @@ export default function SettingsPage() {
       firstName !== initialData.first_name ||
       lastName !== initialData.last_name ||
       showOnContributors !== initialData.show_on_contributors ||
-      pendingAvatar !== null;
+      pendingAvatar !== null ||
+      newPassword.length > 0;
     
     setIsDirty(altered);
-  }, [displayName, handle, firstName, lastName, showOnContributors, pendingAvatar, initialData, loading]);
+  }, [displayName, handle, firstName, lastName, showOnContributors, pendingAvatar, newPassword, initialData, loading]);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -144,6 +147,16 @@ export default function SettingsPage() {
     setIsSaving(true);
     setMessage({ text: "", type: "" });
 
+    // 🚀 Handle Password Update First
+    if (newPassword) {
+      const { error: passwordError } = await supabase.auth.updateUser({ password: newPassword });
+      if (passwordError) {
+        setMessage({ text: `Password Error: ${passwordError.message}`, type: "error" });
+        setIsSaving(false);
+        return;
+      }
+    }
+
     let finalAvatarUrl = initialData.avatar_url;
 
     if (pendingAvatar) {
@@ -180,7 +193,8 @@ export default function SettingsPage() {
     } else {
       setInitialData(prev => ({ ...prev, display_name: displayName, handle: cleanHandle, avatar_url: finalAvatarUrl }));
       setPendingAvatar(null);
-      setMessage({ text: "Settings saved!", type: "success" });
+      setNewPassword(""); // Clear the password field after successful save
+      setMessage({ text: "Settings saved successfully!", type: "success" });
       window.dispatchEvent(new CustomEvent("profile-updated", { 
         detail: { display_name: displayName, handle: cleanHandle, avatar_url: finalAvatarUrl } 
       }));
@@ -278,6 +292,17 @@ export default function SettingsPage() {
                       <input type="text" required value={handle} onChange={(e) => setHandle(e.target.value)} className="w-full border border-[oklch(0.90_0.01_85)] rounded-md pl-8 pr-3 py-2 text-[14px] outline-none focus:border-black" />
                     </div>
                   </div>
+                  {/* 🚀 Change Password Field */}
+                  <div className="pt-2">
+                    <label className="block text-[11px] font-bold text-[oklch(0.45_0.02_260)] mb-2 tracking-wider uppercase">Update Password</label>
+                    <input 
+                      type="password" 
+                      value={newPassword} 
+                      onChange={(e) => setNewPassword(e.target.value)} 
+                      placeholder="Leave blank to keep current password"
+                      className="w-full border border-[oklch(0.90_0.01_85)] rounded-md px-3 py-2 text-[14px] outline-none focus:border-black placeholder:text-slate-300" 
+                    />
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-3 pt-6 border-t border-[oklch(0.95_0.01_85)]">
@@ -306,7 +331,6 @@ export default function SettingsPage() {
                 <span className="font-serif text-3xl text-[oklch(0.20_0.02_260)] font-bold">{totalHours} hrs</span>
               </div>
 
-              {/* 🚀 CONDITIONAL CERTIFICATE BOX WITH AN EMPTY STATE */}
               {totalHours > 0 ? (
                 <div className="mb-8 max-w-xl flex flex-col sm:flex-row gap-4 items-center justify-between p-5 border border-amber-200 rounded-xl bg-amber-50 animate-in fade-in duration-200">
                    <div>
